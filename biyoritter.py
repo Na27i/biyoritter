@@ -1,4 +1,3 @@
-import json
 import sys
 
 args = sys.argv
