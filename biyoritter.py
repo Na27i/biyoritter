@@ -1,4 +1,5 @@
 import sys
+import json
 
 args = sys.argv
 
@@ -15,12 +16,19 @@ AT = settings.ACCESS_TOKEN
 ATS = settings.ACCESS_TOKEN_SECRET
 twitter = OAuth1Session(CK, CS, AT, ATS)
 
-url = "https://api.twitter.com/1.1/statuses/update.json"
+post_url = "https://api.twitter.com/1.1/statuses/update.json"
+get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+
+get_params = {
+    "count" : 1,
+    "exclude_replies" :True,
+    "include_rts":False
+    }
 
 while 1:
     tweet = ''
     flag = 0
-    
+
     print("ツイート本文を入力するのんな～")
     print("困ったら コマンド か cmd を入力するのん！ウチが助けるのん！")
 
@@ -30,8 +38,16 @@ while 1:
             exit(0)
         elif sent == "sub":
             break
+        elif sent == "":
+            get_res = twitter.get(get_url, params = get_params)
+            if get_res.status_code == 200:
+                timelines = json.loads(get_res.text)
+                for get_tweet in timelines:
+                    print(get_tweet['text'])
+            flag = 1
+            break
         elif sent == "cmd" or sent == "コマンド":
-            print("   コマンドを入力するとウチが置換するのんな～")
+            print("   下のコマンドを入力するとウチが置換するのんな～")
             print("   -ps  : ヽ(廿Δ廿 )にゃんぱすー")
             print("   -u   : ウチ")
             print("   -na  : なん")
@@ -39,8 +55,9 @@ while 1:
             print("   -ru  : るん")
             print("   -ta  : たん")
             print("   -ao  : なのん")
-            print("   -on  : のんな～")
-            print("   隠し機能もあるから探してみるのん！\n")
+            print("   -on  : のんな～\n")
+            print("   本文入力後に sub って打つとツイートするのん！")
+            print("   exit か quit って打つとプログラムが終了するのんな～\n")
             flag = 1
             break
         else:
@@ -63,11 +80,11 @@ while 1:
             tweet += sent
             tweet += '\n'
 
-    params = {"status" : tweet}
-    res = twitter.post(url, params = params)
+    post_params = {"status" : tweet}
+    post_res = twitter.post(post_url, params = post_params)
 
     if flag != 1:
-        if res.status_code != 200:
+        if post_res.status_code != 200:
             print("投稿に失敗したのんな～\n")
         else:
             print("投稿成功なのん！\n")
