@@ -19,35 +19,58 @@ twitter = OAuth1Session(CK, CS, AT, ATS)
 post_url = "https://api.twitter.com/1.1/statuses/update.json"
 get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 
-get_params = {
-    "count" : 1,
-    "exclude_replies" :True,
-    "include_rts":False
-    }
+def mtl(count):
+    get_params = {"count" : count}
+    get_res = twitter.get(get_url, params = get_params)
+    if get_res.status_code == 200:
+        timelines = json.loads(get_res.text)
+        for roop in range(10):
+            print("- - - - - ", end="")
+            if roop == 9:
+                print("")
+        for get_tweet in timelines:
+            print("  " + get_tweet['user']['name'])
+            print(get_tweet['text'] + "\n")
+        for roop in range(10):
+            print("- - - - - ", end="")
+            if roop == 9:
+                print("")
 
 while 1:
-    tweet = ''
+    tweet = ""
     flag = 0
 
     print("ツイート本文を入力するのんな～")
-    print("困ったら コマンド か cmd を入力するのん！ウチが助けるのん！")
+    print("困ったら cmd を入力するのん！ウチが助けるのん！")
 
     while 1:
-        sent = input('>> ')
-        if sent == "quit" or sent == "exit":
+        sent = input(">> ")
+        if sent == "exit":
             exit(0)
         elif sent == "sub":
             break
-        elif sent == "":
-            get_res = twitter.get(get_url, params = get_params)
-            if get_res.status_code == 200:
-                timelines = json.loads(get_res.text)
-                for get_tweet in timelines:
-                    print(get_tweet['text'])
+        elif sent == "mtl":
+            mtl(25)
             flag = 1
             break
-        elif sent == "cmd" or sent == "コマンド":
-            print("   下のコマンドを入力するとウチが置換するのんな～")
+        elif sent.find("-mtl") != -1:
+            try:
+                input_params = int(input(">> "))
+            except:
+                input_params = int(25)
+            
+            if int(input_params) > 200:
+                mtl(200)
+            else:
+                mtl(input_params)
+            flag = 1
+            break
+        #elif sent == "":
+        #    mtl(1)
+        #    flag = 1
+        #    break
+        elif sent == "cmd":
+            print("   置換コマンドなのん。入力するとウチが置換するのんな～")
             print("   -ps  : ヽ(廿Δ廿 )にゃんぱすー")
             print("   -u   : ウチ")
             print("   -na  : なん")
@@ -56,8 +79,11 @@ while 1:
             print("   -ta  : たん")
             print("   -ao  : なのん")
             print("   -on  : のんな～\n")
-            print("   本文入力後に sub って打つとツイートするのん！")
-            print("   exit か quit って打つとプログラムが終了するのんな～\n")
+            print("   そのほかのコマンドなのん。いろんな機能があるん！")
+            print("   sub  : 入力した文字列をツイートするのん！")
+            print("   mtl  : 自分のツイートを表示するのんな～。")
+            print("   -mtl : 打った後に任意の数を入力するのん。ウチがその数だけツイートを表示させるのん！")
+            print("   exit : プログラムを終了させるのん。\n")
             flag = 1
             break
         else:
