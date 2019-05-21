@@ -1,5 +1,9 @@
 import sys
 import json
+from janome.tokenizer import Tokenizer
+from janome.analyzer import Analyzer
+from janome.charfilter import *
+from janome.tokenfilter import *
 
 args = sys.argv
 
@@ -36,6 +40,33 @@ def mtl(count):
             if roop == 9:
                 print("")
 
+def gen():
+    tweetlist = ""
+    cnt = 0
+    get_params = {"count" : 1, 'exclude_replies':True, 'include_rts':False,}
+    get_res = twitter.get(get_url, params = get_params)
+    if get_res.status_code == 200:
+        timelines = json.loads(get_res.text)
+        for roop in timelines:
+            tweetlist = (roop["text"])
+        a = Analyzer(token_filters=[POSKeepFilter(['動詞'])])
+        for token in a.analyze(tweetlist):
+            cnt += 1
+        
+        if cnt == 0:
+            post_params = {"status" : "ウチは何もしたくない気分なのん。"}
+            post_res = twitter.post(post_url, params = post_params)
+        elif cnt == 1:
+            post_params = {"status" : "ウチも" + token.base_form + "のん！"}
+            post_res = twitter.post(post_url, params = post_params)
+        else:
+            post_params = {"status" : "ウチにはやることがいっぱいなのん……。"}
+            post_res = twitter.post(post_url, params = post_params)
+
+        if post_res.status_code != 200:
+            print("なにかがおかしいのん……。")
+    print("")
+
 while 1:
     tweet = ""
     flag = 0
@@ -65,10 +96,10 @@ while 1:
                 mtl(input_params)
             flag = 1
             break
-        #elif sent == "":
-        #    mtl(1)
-        #    flag = 1
-        #    break
+        elif sent == "":
+            gen()
+            flag = 1
+            break
         elif sent == "cmd":
             print("   置換コマンドなのん。入力するとウチが置換するのんな～")
             print("   -ps  : ヽ(廿Δ廿 )にゃんぱすー")
