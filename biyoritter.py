@@ -1,10 +1,6 @@
 import sys
 import json
-from janome.tokenizer import Tokenizer
-from janome.analyzer import Analyzer
-from janome.charfilter import *
-from janome.tokenfilter import *
-
+import re
 args = sys.argv
 
 if len(args) == 1 :
@@ -21,7 +17,9 @@ ATS = settings.ACCESS_TOKEN_SECRET
 twitter = OAuth1Session(CK, CS, AT, ATS)
 
 post_url = "https://api.twitter.com/1.1/statuses/update.json"
+upload_url = "https://api.twitter.com/1.1/statuses/upload.json"
 get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+
 
 def mtl(count):
     get_params = {"count" : count}
@@ -40,37 +38,11 @@ def mtl(count):
             if roop == 9:
                 print("")
 
-def gen():
-    tweetlist = ""
-    cnt = 0
-    get_params = {"count" : 1, 'exclude_replies':True, 'include_rts':False,}
-    get_res = twitter.get(get_url, params = get_params)
-    if get_res.status_code == 200:
-        timelines = json.loads(get_res.text)
-        for roop in timelines:
-            tweetlist = (roop["text"])
-        a = Analyzer(token_filters=[POSKeepFilter(['動詞'])])
-        for token in a.analyze(tweetlist):
-            cnt += 1
-        
-        if cnt == 0:
-            post_params = {"status" : "ウチは何もしたくない気分なのん。"}
-            post_res = twitter.post(post_url, params = post_params)
-        elif cnt == 1:
-            post_params = {"status" : "ウチも" + token.base_form + "のん！"}
-            post_res = twitter.post(post_url, params = post_params)
-        else:
-            post_params = {"status" : "ウチにはやることがいっぱいなのん……。"}
-            post_res = twitter.post(post_url, params = post_params)
-
-        if post_res.status_code != 200:
-            print("なにかがおかしいのん……。")
-    print("")
-
 while 1:
     tweet = ""
     flag = 0
-
+    img_reg = r'img:.+'
+    img_id = -1
     print("ツイート本文を入力するのんな～")
     print("困ったら cmd を入力するのん！ウチが助けるのん！")
 
@@ -96,10 +68,16 @@ while 1:
                 mtl(input_params)
             flag = 1
             break
-        elif sent == "":
-            gen()
-            flag = 1
+        elif re.match(img_reg, sent):
+            img = {"media" : open(sent[4:].replace('\n',''),'rb')}
+            img_obj = twitter.post(upload_url, files = img)
+            img_id = json.loads(img_obj.text)['media_id']
             break
+	    
+        #elif sent == "":
+        #    mtl(1)
+        #    flag = 1
+        #    break
         elif sent == "cmd":
             print("   置換コマンドなのん。入力するとウチが置換するのんな～")
             print("   -ps  : ヽ(廿Δ廿 )にゃんぱすー")
@@ -110,7 +88,7 @@ while 1:
             print("   -ta  : たん")
             print("   -ao  : なのん")
             print("   -on  : のんな～\n")
-            print("   そのほかのコマンドなのん。隠し機能もあるん！")
+            print("   そのほかのコマンドなのん。いろんな機能があるん！")
             print("   sub  : 入力した文字列をツイートするのん！")
             print("   mtl  : 自分のツイートを表示するのんな～。")
             print("   -mtl : 打った後に任意の数を入力するのん。ウチがその数だけツイートを表示させるのん！")
@@ -137,7 +115,7 @@ while 1:
             tweet += sent
             tweet += '\n'
 
-    post_params = {"status" : tweet}
+    post_params = {"status" : tweet, "media_ids":[img_id]}
     post_res = twitter.post(post_url, params = post_params)
 
     if flag != 1:
