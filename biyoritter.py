@@ -23,27 +23,29 @@ twitter = OAuth1Session(CK, CS, AT, ATS)
 post_url = "https://api.twitter.com/1.1/statuses/update.json"
 get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 
+def draw_line():
+    for roop in range(10):
+        print("- - - - - ", end="")
+        if roop == 9:
+            print("")
+
 def mtl(count):
     get_params = {"count" : count}
     get_res = twitter.get(get_url, params = get_params)
     if get_res.status_code == 200:
         timelines = json.loads(get_res.text)
-        for roop in range(10):
-            print("- - - - - ", end="")
-            if roop == 9:
-                print("")
+        draw_line()
         for get_tweet in timelines:
             print("  " + get_tweet['user']['name'])
-            print(get_tweet['text'] + "\n")
-        for roop in range(10):
-            print("- - - - - ", end="")
-            if roop == 9:
-                print("")
+            print(get_tweet['text'])
+            print(get_tweet['created_at'] + "\n")
+        draw_line()
+    print("")
 
 def gen():
     tweetlist = ""
     cnt = 0
-    get_params = {"count" : 1, 'exclude_replies':True, 'include_rts':False,}
+    get_params = {"count" : 1, "exclude_replies":True, "include_rts":False}
     get_res = twitter.get(get_url, params = get_params)
     if get_res.status_code == 200:
         timelines = json.loads(get_res.text)
@@ -52,7 +54,7 @@ def gen():
         a = Analyzer(token_filters=[POSKeepFilter(['動詞'])])
         for token in a.analyze(tweetlist):
             cnt += 1
-        
+
         if cnt == 0:
             post_params = {"status" : "ウチは何もしたくない気分なのん。"}
             post_res = twitter.post(post_url, params = post_params)
@@ -64,7 +66,9 @@ def gen():
             post_res = twitter.post(post_url, params = post_params)
 
         if post_res.status_code != 200:
-            print("なにかがおかしいのん……。")
+            print("ウチは暇じゃないのん……。")
+    else :
+        print("なにかがおかしいのん……。")
     print("")
 
 while 1:
@@ -89,7 +93,7 @@ while 1:
                 input_params = int(input(">> "))
             except:
                 input_params = int(25)
-            
+
             if int(input_params) > 200:
                 mtl(200)
             else:
