@@ -42,7 +42,7 @@ while 1:
     tweet = ""
     flag = 0
     img_reg = r'img:.+'
-    img_id = -1
+    img_id = None
     print("ツイート本文を入力するのんな～")
     print("困ったら cmd を入力するのん！ウチが助けるのん！")
 
@@ -115,7 +115,10 @@ while 1:
             tweet += sent
             tweet += '\n'
 
-    post_params = {"status" : tweet, "media_ids":[img_id]}
+    if img_id:
+        post_params = {"status" : tweet, "media_ids":[img_id]}
+    else:
+        post_params = {"status" : tweet}
     post_res = twitter.post(post_url, params = post_params)
 
     if flag != 1:
