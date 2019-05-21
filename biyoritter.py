@@ -1,5 +1,6 @@
 import sys
 import json
+import re
 from janome.tokenizer import Tokenizer
 from janome.analyzer import Analyzer
 from janome.charfilter import *
@@ -22,6 +23,7 @@ twitter = OAuth1Session(CK, CS, AT, ATS)
 
 post_url = "https://api.twitter.com/1.1/statuses/update.json"
 get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+upload_url = "https://upload.twitter.com/1.1/media/upload.json"
 
 def draw_line():
     for roop in range(10):
@@ -74,6 +76,8 @@ def gen():
 while 1:
     tweet = ""
     flag = 0
+    img_reg = r'img:.+'
+    img_id = None
 
     print("ツイート本文を入力するのんな～")
     print("困ったら cmd を入力するのん！ウチが助けるのん！")
@@ -99,6 +103,11 @@ while 1:
             else:
                 mtl(input_params)
             flag = 1
+            break
+        elif re.match(img_reg, sent):
+            img = {"media" : open(sent[4:].replace('\n',''),'rb')}
+            img_obj = twitter.post(upload_url, files = img)
+            img_id = json.loads(img_obj.text)['media_id']
             break
         elif sent == "":
             gen()
@@ -141,7 +150,10 @@ while 1:
             tweet += sent
             tweet += '\n'
 
-    post_params = {"status" : tweet}
+    if img_id:
+        post_params = {"status" : tweet, "media_ids":[img_id]}
+    else:
+        post_params = {"status" : tweet}
     post_res = twitter.post(post_url, params = post_params)
 
     if flag != 1:
