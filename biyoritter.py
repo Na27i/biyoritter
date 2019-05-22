@@ -1,9 +1,13 @@
 import sys
 import json
+import re
 from janome.tokenizer import Tokenizer
 from janome.analyzer import Analyzer
 from janome.charfilter import *
 from janome.tokenfilter import *
+
+# 置換コマンド
+import cmd
 
 args = sys.argv
 
@@ -22,13 +26,16 @@ twitter = OAuth1Session(CK, CS, AT, ATS)
 
 post_url = "https://api.twitter.com/1.1/statuses/update.json"
 get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+upload_url = "https://upload.twitter.com/1.1/media/upload.json"
 
+# 線を引くだけ
 def draw_line():
     for roop in range(10):
         print("- - - - - ", end="")
         if roop == 9:
             print("")
 
+# TL表示
 def mtl(count):
     get_params = {"count" : count}
     get_res = twitter.get(get_url, params = get_params)
@@ -40,8 +47,25 @@ def mtl(count):
             print(get_tweet['text'])
             print(get_tweet['created_at'] + "\n")
         draw_line()
+
+# コマンドを表示
+def cmd_disp():
+    print("   置換コマンドなのん。入力するとウチが置換するのんな～")
+    for i in range(cmd.cmd_len):
+        print("   " + cmd.rep_cmd[i][0].ljust(3) + " : " + cmd.rep_cmd[i][1])
+    print("\n   そのほかのコマンドなのん。隠し機能もあるん！")
+    for i in range(cmd.oth_len):
+        print("   " + cmd.oth_cmd[i][0].ljust(4) + " : " + cmd.oth_cmd[i][1])
     print("")
 
+# ツイート本文の置換
+def rep(sent):
+    for i in range(cmd.cmd_len):
+        if sent.find(cmd.rep_cmd[i][0]) != -1:
+            sent = sent.replace(cmd.rep_cmd[i][0], cmd.rep_cmd[i][1])
+    return sent
+
+# ツイートの自動生成
 def gen():
     tweetlist = ""
     cnt = 0
@@ -74,6 +98,8 @@ def gen():
 while 1:
     tweet = ""
     flag = 0
+    img_reg = r'img:.+'
+    img_id = None
 
     print("ツイート本文を入力するのんな～")
     print("困ったら cmd を入力するのん！ウチが助けるのん！")
@@ -100,48 +126,27 @@ while 1:
                 mtl(input_params)
             flag = 1
             break
+        elif re.match(img_reg, sent):
+            img = {"media" : open(sent[4:].replace('\n',''),'rb')}
+            img_obj = twitter.post(upload_url, files = img)
+            img_id = json.loads(img_obj.text)['media_id']
+            break
         elif sent == "":
             gen()
             flag = 1
             break
         elif sent == "cmd":
-            print("   置換コマンドなのん。入力するとウチが置換するのんな～")
-            print("   -ps  : ヽ(廿Δ廿 )にゃんぱすー")
-            print("   -u   : ウチ")
-            print("   -na  : なん")
-            print("   -no  : のん")
-            print("   -ru  : るん")
-            print("   -ta  : たん")
-            print("   -ao  : なのん")
-            print("   -on  : のんな～\n")
-            print("   そのほかのコマンドなのん。隠し機能もあるん！")
-            print("   sub  : 入力した文字列をツイートするのん！")
-            print("   mtl  : 自分のツイートを表示するのんな～。")
-            print("   -mtl : 打った後に任意の数を入力するのん。ウチがその数だけツイートを表示させるのん！")
-            print("   exit : プログラムを終了させるのん。\n")
+            cmd_disp()
             flag = 1
             break
         else:
-            if sent.find("-ps") != -1:
-                sent = sent.replace("-ps", "ヽ(廿Δ廿 )にゃんぱすー")
-            if sent.find("-u") != -1:
-                sent = sent.replace("-u" , "ウチ")
-            if sent.find("-na") != -1:
-                sent = sent.replace("-na", "なん")
-            if sent.find("-no") != -1:
-                sent = sent.replace("-no", "のん")
-            if sent.find("-ru") != -1:
-                sent = sent.replace("-ru", "るん")
-            if sent.find("-ta") != -1:
-                sent = sent.replace("-ta", "たん")
-            if sent.find("-ao") != -1:
-                sent = sent.replace("-ao", "なのん")
-            if sent.find("-on") != -1:
-                sent = sent.replace("-on", "のんな～")
-            tweet += sent
+            tweet += rep(sent)
             tweet += '\n'
 
-    post_params = {"status" : tweet}
+    if img_id:
+        post_params = {"status" : tweet, "media_ids":[img_id]}
+    else:
+        post_params = {"status" : tweet}
     post_res = twitter.post(post_url, params = post_params)
 
     if flag != 1:
