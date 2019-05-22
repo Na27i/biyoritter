@@ -127,10 +127,19 @@ while 1:
             flag = 1
             break
         elif re.match(img_reg, sent):
-            img = {"media" : open(sent[4:].replace('\n',''),'rb')}
-            img_obj = twitter.post(upload_url, files = img)
-            img_id = json.loads(img_obj.text)['media_id']
-            break
+            try:
+                img = {"media" : open(sent[4:].replace('\n',''),'rb')}
+                img_obj = twitter.post(upload_url, files = img)
+                img_id = json.loads(img_obj.text)['media_id']
+                break
+            except FileNotFoundError:
+                print("そんなファイルはないのんな〜")
+                print("リトライするのん")
+            except KeyError:
+                print("アップロードに失敗したん……")
+                print("リトライするのん")
+                img_id = None
+
         elif sent == "":
             gen()
             flag = 1
