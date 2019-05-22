@@ -5,18 +5,17 @@ from janome.tokenizer import Tokenizer
 from janome.analyzer import Analyzer
 from janome.charfilter import *
 from janome.tokenfilter import *
+from requests_oauthlib import OAuth1Session
 
 # 置換コマンド
 import cmd
 
+# 認証情報
 args = sys.argv
-
 if len(args) == 1 :
     import main as settings
 else :
     import sub as settings
-
-from requests_oauthlib import OAuth1Session
 
 CK = settings.CONSUMER_KEY
 CS = settings.CONSUMER_SECRET
@@ -25,7 +24,8 @@ ATS = settings.ACCESS_TOKEN_SECRET
 twitter = OAuth1Session(CK, CS, AT, ATS)
 
 post_url = "https://api.twitter.com/1.1/statuses/update.json"
-get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+get_url  = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+src_url  = "https://api.twitter.com/1.1/search/tweets.json"
 upload_url = "https://upload.twitter.com/1.1/media/upload.json"
 
 # 線を引くだけ
@@ -35,17 +35,30 @@ def draw_line():
         if roop == 9:
             print("")
 
-# TL表示
-def mtl(count):
-    get_params = {"count" : count}
-    get_res = twitter.get(get_url, params = get_params)
+# TL表示(検索)
+def mtl(count, sent):
+    print(sent)
+    if sent == None:
+        get_params = {"count": count}
+        get_res = twitter.get(get_url, params = get_params)
+    else:
+        sent += " exclude:retweets exclude:replies"
+        get_params = {"q": sent, "count": count}
+        get_res = twitter.get(src_url, params = get_params)
+
     if get_res.status_code == 200:
         timelines = json.loads(get_res.text)
         draw_line()
-        for get_tweet in timelines:
-            print("  " + get_tweet['user']['name'])
-            print(get_tweet['text'])
-            print(get_tweet['created_at'] + "\n")
+        if sent == None:
+            for get_tweet in timelines:
+                print("  " + get_tweet['user']['name'])
+                print(get_tweet['text'])
+                print(get_tweet['created_at'] + "\n")
+        else:
+            for get_tweet in timelines["statuses"]:
+                print("  " + get_tweet['user']['name'])
+                print(get_tweet['text'])
+                print(get_tweet['created_at'] + "\n")
         draw_line()
 
 # コマンドを表示
@@ -95,6 +108,8 @@ def gen():
         print("なにかがおかしいのん……。")
     print("")
 
+
+
 while 1:
     tweet = ""
     flag = 0
@@ -110,8 +125,13 @@ while 1:
             exit(0)
         elif sent == "sub":
             break
+        elif sent == "src":
+            src_word = input(">> ")
+            mtl(25, src_word)
+            flag = 1
+            break
         elif sent == "mtl":
-            mtl(25)
+            mtl(25, None)
             flag = 1
             break
         elif sent.find("-mtl") != -1:
@@ -121,9 +141,9 @@ while 1:
                 input_params = int(25)
 
             if int(input_params) > 200:
-                mtl(200)
+                mtl(200, None)
             else:
-                mtl(input_params)
+                mtl(input_params, None)
             flag = 1
             break
         elif re.match(img_reg, sent):
@@ -139,7 +159,6 @@ while 1:
                 print("アップロードに失敗したん……")
                 print("リトライするのん")
                 img_id = None
-
         elif sent == "":
             gen()
             flag = 1
