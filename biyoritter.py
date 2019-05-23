@@ -1,6 +1,8 @@
 import sys
 import json
 import re
+import time
+import calendar
 from janome.tokenizer import Tokenizer
 from janome.analyzer import Analyzer
 from janome.charfilter import *
@@ -35,9 +37,15 @@ def draw_line():
         if roop == 9:
             print("")
 
+
+def time_cnv(created_at):
+    time_utc = time.strptime(created_at, '%a %b %d %H:%M:%S +0000 %Y')
+    unix_time = calendar.timegm(time_utc)
+    time_local = time.localtime(unix_time)
+    return time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+
 # TL表示(検索)
 def mtl(count, sent):
-    print(sent)
     if sent == None:
         get_params = {"count": count}
         get_res = twitter.get(get_url, params = get_params)
@@ -51,15 +59,16 @@ def mtl(count, sent):
         draw_line()
         if sent == None:
             for get_tweet in timelines:
-                print("  " + get_tweet['user']['name'])
+                print("\n  " + get_tweet['user']['name'] + "   (@" + get_tweet['user']['screen_name'] + ")")
                 print(get_tweet['text'])
-                print(get_tweet['created_at'] + "\n")
+                print("\n" + "[ " + time_cnv(get_tweet['created_at']) + " ]\n")
+                draw_line()
         else:
             for get_tweet in timelines["statuses"]:
-                print("  " + get_tweet['user']['name'])
+                print("\n  " + get_tweet['user']['name'] + "   (@" + get_tweet['user']['screen_name'] + ")")
                 print(get_tweet['text'])
-                print(get_tweet['created_at'] + "\n")
-        draw_line()
+                print("\n" + "[ " + time_cnv(get_tweet['created_at']) + " ]\n")
+                draw_line()
 
 # コマンドを表示
 def cmd_disp():
