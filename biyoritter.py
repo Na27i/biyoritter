@@ -102,19 +102,19 @@ def gen():
             cnt += 1
 
         if cnt == 0:
-            post_params = {"status" : "ウチは何もしたくない気分なのん。"}
+            post_params = {"status" : "ウチは何もしたくない気分なのん"}
             post_res = twitter.post(post_url, params = post_params)
         elif cnt == 1:
             post_params = {"status" : "ウチも" + token.base_form + "のん！"}
             post_res = twitter.post(post_url, params = post_params)
         else:
-            post_params = {"status" : "ウチにはやることがいっぱいなのん……。"}
+            post_params = {"status" : "ウチにはやることがいっぱいなのん……"}
             post_res = twitter.post(post_url, params = post_params)
 
         if post_res.status_code != 200:
-            print("ウチは暇じゃないのん……。")
+            print("ウチは暇じゃないのん……")
     else :
-        print("なにかがおかしいのん……。")
+        print("なにかがおかしいのん……")
     print("")
 
 
@@ -133,6 +133,10 @@ while 1:
         if sent == "exit":
             exit(0)
         elif sent == "sub":
+            break
+        elif sent == "ers":
+            print("入力した文字列を消去したのん！\n")
+            flag = 1
             break
         elif sent == "src":
             src_word = input(">> ")
@@ -163,10 +167,10 @@ while 1:
                 break
             except FileNotFoundError:
                 print("そんなファイルはないのんな〜")
-                print("リトライするのん")
+                print("リトライするのん！\n")
             except KeyError:
                 print("アップロードに失敗したん……")
-                print("リトライするのん")
+                print("リトライするのん！\n")
                 img_id = None
         elif sent == "":
             gen()
@@ -178,15 +182,17 @@ while 1:
             break
         else:
             tweet += rep(sent)
-            tweet += '\n'
-
-    if img_id:
-        post_params = {"status" : tweet, "media_ids":[img_id]}
-    else:
-        post_params = {"status" : tweet}
-    post_res = twitter.post(post_url, params = post_params)
-
-    if flag != 1:
+            tweet += "\n"
+    
+    if flag == 1:
+        tweet = ""
+    elif flag != 1:
+        if img_id:
+            post_params = {"status" : tweet, "media_ids":[img_id]}
+        else:
+            post_params = {"status" : tweet}
+        post_res = twitter.post(post_url, params = post_params)
+        
         if post_res.status_code != 200:
             print("投稿に失敗したのんな～\n")
         else:
