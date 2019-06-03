@@ -94,24 +94,22 @@ def rep(sent):
 
 # ツイートの自動生成
 def gen():
-    tweet = ""
+    words = ""
     tweetlist = ""
     do = []
-    get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
     get_params = {"count": 1, "exclude_replies": True, "include_rts": False}
     get_res = twitter.get(get_url, params=get_params)
     if get_res.status_code == 200:
         timelines = json.loads(get_res.text)
         #全ツイートを取得
         for i in timelines:
-            tweet = (i["text"])
-            tweet = tweet.split("http" , 1)[0]   #urlを削除
-            tweet = tweet.split("@", 1)[0]  #usernameを削除
-            tweet = tweet.split(" ")[0]   #半角スペースを削除
-            tweet = tweet.split("　")[0]   #全角スペースを削除
-            tweetlist += tweet
+            words = (i["text"])
+            words = words.split("http", 1)[0]  #urlを削除
+            words = words.split("@", 1)[0]  #usernameを削除
+            words = words.split(" ")[0]  #半角スペースを削除
+            words = words.split("　")[0]  #全角スペースを削除
+            tweetlist += words
 
-        post_url = "https://api.twitter.com/1.1/statuses/update.json"
         t = Tokenizer()
         tokens = t.tokenize(tweetlist)
         for token in tokens:
