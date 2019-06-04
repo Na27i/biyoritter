@@ -28,7 +28,6 @@ get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 src_url = "https://api.twitter.com/1.1/search/tweets.json"
 upload_url = "https://upload.twitter.com/1.1/media/upload.json"
 
-
 # 線を引くだけ
 def draw_line():
     for roop in range(10):
@@ -36,13 +35,12 @@ def draw_line():
         if roop == 9:
             print("")
 
-
+# 時間まわりの調整
 def time_cnv(created_at):
     time_utc = time.strptime(created_at, '%a %b %d %H:%M:%S +0000 %Y')
     unix_time = calendar.timegm(time_utc)
     time_local = time.localtime(unix_time)
     return time.strftime("%Y-%m-%d %H:%M:%S", time_local)
-
 
 # TL表示(検索)
 def mtl(count, sent):
@@ -72,7 +70,6 @@ def mtl(count, sent):
                 print("\n" + "[ " + time_cnv(get_tweet['created_at']) + " ]\n")
                 draw_line()
 
-
 # コマンドを表示
 def cmd_disp():
     print("   置換コマンドなのん。入力するとウチが置換するのんな～")
@@ -83,14 +80,12 @@ def cmd_disp():
         print("   " + cmd.oth_cmd[i][0].ljust(4) + " : " + cmd.oth_cmd[i][1])
     print("")
 
-
 # ツイート本文の置換
 def rep(sent):
     for i in range(cmd.cmd_len):
         if sent.find(cmd.rep_cmd[i][0]) != -1:
             sent = sent.replace(cmd.rep_cmd[i][0], cmd.rep_cmd[i][1])
     return sent
-
 
 # ツイートの自動生成
 def gen():
@@ -131,12 +126,11 @@ def gen():
         print("ツイートの生成に失敗したのんな～\n")
     print("")
 
-
 while 1:
     tweet = ""
     flag = 0
     img_reg = r'img:.+'
-    img_id = None
+    img_id = ""
 
     print("ツイート本文を入力するのんな～")
     print("困ったら cmd を入力するのん！ウチが助けるのん！")
@@ -174,10 +168,15 @@ while 1:
             break
         elif re.match(img_reg, sent):
             try:
-                img = {"media": open(sent[4:].replace('\n', ''), 'rb')}
-                img_obj = twitter.post(upload_url, files=img)
-                img_id = json.loads(img_obj.text)['media_id']
-                break
+                img = {"media": open(sent[4:].replace('\n', ''), 'rb')}#files
+                img_obj = twitter.post(upload_url, files=img)#rec_media
+
+                media_id = json.loads(img_obj.text)['media_id']
+                media_id_string = json.loads(img_obj.text)['media_id_string']
+                if img_id == "":
+                    img_id += media_id_string
+                else :
+                    img_id = img_id + "," + media_id_string
             except FileNotFoundError:
                 print("そんなファイルはないのんな〜")
                 print("リトライするのん！\n")
