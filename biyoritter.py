@@ -122,9 +122,10 @@ def gen():
 
         if post_res.status_code != 200:
             print("二番煎じは面白くないのん……\n")
+        else :
+            print("投稿成功なのん！\n")
     else:
         print("ツイートの生成に失敗したのんな～\n")
-    print("")
 
 while 1:
     tweet = ""
@@ -168,8 +169,8 @@ while 1:
             break
         elif re.match(img_reg, sent):
             try:
-                img = {"media": open(sent[4:].replace('\n', ''), 'rb')}#files
-                img_obj = twitter.post(upload_url, files=img)#rec_media
+                img = {"media": open(sent[4:].replace('\n', ''), 'rb')}
+                img_obj = twitter.post(upload_url, files=img)
 
                 media_id = json.loads(img_obj.text)['media_id']
                 media_id_string = json.loads(img_obj.text)['media_id_string']
