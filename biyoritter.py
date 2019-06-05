@@ -25,6 +25,7 @@ twitter = OAuth1Session(CK, CS, AT, ATS)
 
 post_url = "https://api.twitter.com/1.1/statuses/update.json"
 get_url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+tl_url = "https://api.twitter.com/1.1/statuses/home_timeline.json"
 src_url = "https://api.twitter.com/1.1/search/tweets.json"
 upload_url = "https://upload.twitter.com/1.1/media/upload.json"
 
@@ -43,10 +44,14 @@ def time_cnv(created_at):
     return time.strftime("%Y-%m-%d %H:%M:%S", time_local)
 
 # TL表示(検索)
-def mtl(count, sent):
+def tl(count, sent, mode):
     if sent == None:
-        get_params = {"count": count}
-        get_res = twitter.get(get_url, params=get_params)
+        if mode == 0:
+            get_params = {"count": count}
+            get_res = twitter.get(tl_url, params=get_params)
+        else :
+            get_params = {"count": count}
+            get_res = twitter.get(get_url, params=get_params)
     else:
         sent += " exclude:retweets exclude:replies"
         get_params = {"q": sent, "count": count}
@@ -146,13 +151,24 @@ while 1:
             print("入力した文字列を消去したのん！\n")
             flag = 1
             break
-        elif sent == "src":
-            src_word = input(">> ")
-            mtl(25, src_word)
+        elif sent == "tl":
+            tl(25, None, 0)
+            flag = 1
+            break
+        elif sent.find("-tl") != -1:
+            try:
+                input_params = int(input(">> "))
+            except:
+                input_params = int(25)
+
+            if int(input_params) > 200:
+                tl(200, None, 0)
+            else:
+                tl(input_params, None, 0)
             flag = 1
             break
         elif sent == "mtl":
-            mtl(25, None)
+            tl(25, None, 1)
             flag = 1
             break
         elif sent.find("-mtl") != -1:
@@ -162,9 +178,14 @@ while 1:
                 input_params = int(25)
 
             if int(input_params) > 200:
-                mtl(200, None)
+                tl(200, None, 1)
             else:
-                mtl(input_params, None)
+                tl(input_params, None, 1)
+            flag = 1
+            break
+        elif sent == "src":
+            src_word = input(">> ")
+            tl(25, src_word, 2)
             flag = 1
             break
         elif re.match(img_reg, sent):
