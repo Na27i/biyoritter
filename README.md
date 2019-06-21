@@ -17,10 +17,10 @@ pythonの勉強も兼ねてTwitterのクライアント？的な何かを作っ�
 4. main.pyを作成して取得したキーとトークンを書きこむのん。
 
 ```:main.py
-> CONSUMER_KEY = "XXXXXXXXXX"  
-> CONSUMER_SECRET = "XXXXXXXXXX"  
-> ACCESS_TOKEN = "XXXXXXXXXX"  
-> ACCESS_TOKEN_SECRET = "XXXXXXXXXX"
+CONSUMER_KEY = "XXXXXXXXXX"  
+CONSUMER_SECRET = "XXXXXXXXXX"  
+ACCESS_TOKEN = "XXXXXXXXXX"  
+ACCESS_TOKEN_SECRET = "XXXXXXXXXX"
 ```
 
 5. サブ垢を使いたいときはmain.pyと同様にsub.pyを作るのんな～。
