@@ -32,7 +32,7 @@ upload_url = "https://upload.twitter.com/1.1/media/upload.json"
 # 線を引くだけ
 def draw_line():
     for roop in range(10):
-        print("- - - - - ", end="")
+        print("- - - - - ")
         if roop == 9:
             print("")
 
