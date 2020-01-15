@@ -4,6 +4,7 @@ import re
 import time
 import calendar
 import random
+import shutil
 from janome.tokenizer import Tokenizer
 from requests_oauthlib import OAuth1Session
 
@@ -14,8 +15,10 @@ import cmd
 args = sys.argv
 if len(args) == 1:
     import main as settings
-else:
-    import sub as settings
+
+# ターミナルのサイズ取得
+terminal_size = shutil.get_terminal_size()
+columns = terminal_size.columns
 
 CK = settings.CONSUMER_KEY
 CS = settings.CONSUMER_SECRET
@@ -29,12 +32,14 @@ tl_url = "https://api.twitter.com/1.1/statuses/home_timeline.json"
 src_url = "https://api.twitter.com/1.1/search/tweets.json"
 upload_url = "https://upload.twitter.com/1.1/media/upload.json"
 
+# TL表示用の線
+line = ""
+for roop in range(columns):
+    line += "-"
+
 # 線を引くだけ
 def draw_line():
-    for roop in range(10):
-        print("- - - - - ")
-        if roop == 9:
-            print("")
+    print(line)
 
 # 時間まわりの調整
 def time_cnv(created_at):
@@ -62,14 +67,14 @@ def tl(count, sent, mode):
         draw_line()
         if sent == None:
             for get_tweet in timelines:
-                print("\n  " + get_tweet['user']['name'] + "   (@" +
+                print("  " + get_tweet['user']['name'] + "   (@" +
                       get_tweet['user']['screen_name'] + ")")
                 print(get_tweet['text'])
                 print("\n" + "[ " + time_cnv(get_tweet['created_at']) + " ]\n")
                 draw_line()
         else:
             for get_tweet in timelines["statuses"]:
-                print("\n  " + get_tweet['user']['name'] + "   (@" +
+                print("  " + get_tweet['user']['name'] + "   (@" +
                       get_tweet['user']['screen_name'] + ")")
                 print(get_tweet['text'])
                 print("\n" + "[ " + time_cnv(get_tweet['created_at']) + " ]\n")
